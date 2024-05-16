@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="bridge_rbcar_controller" pkg="bridge_rbcar_controller" type="bridge_rbcar_controller"  output="screen">
+  	<rosparam command="load" file="$(find bridge_rbcar_controller)/config/bridge_rbcar_controller.yaml" />
+  </node>
+</launch>

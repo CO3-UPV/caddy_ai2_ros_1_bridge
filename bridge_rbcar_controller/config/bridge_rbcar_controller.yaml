@@ -1,0 +1,5 @@
+_pub_topic_: "command"
+_ros_2_server_ip_: "localhost"
+_ros_2_server_port_: 8888
+_ros_1_server_port_: 8889
+_Hz_: 25
