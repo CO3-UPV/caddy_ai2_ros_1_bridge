@@ -51,11 +51,11 @@ int main(int argc, char **argv)
   int _ros_1_server_port_ = 8889;
   int _Hz_ = 10;
 
-  _node_.param<std::string>("_pub_topic_", _pub_topic_, "command");
-  _node_.param<std::string>("_ros_2_server_ip_", _ros_2_server_ip_, "localhost");
-  _node_.param<int>("_ros_2_server_port_", _ros_2_server_port_, 8888);
-  _node_.param<int>("_ros_1_server_port_", _ros_1_server_port_, 8889);
-  _node_.param<int>("_Hz_", _Hz_, 10);
+  _node_.param<std::string>("pub_topic", _pub_topic_, "command");
+  _node_.param<std::string>("ros_2_server_ip", _ros_2_server_ip_, "localhost");
+  _node_.param<int>("ros_2_server_port", _ros_2_server_port_, 8888);
+  _node_.param<int>("ros_1_server_port", _ros_1_server_port_, 8889);
+  _node_.param<int>("Hz", _Hz_, 10);
 
 
   //ros::Subscriber _sub_ = _node_.subscribe(_sub_topic_, 1, _sub_callback);
