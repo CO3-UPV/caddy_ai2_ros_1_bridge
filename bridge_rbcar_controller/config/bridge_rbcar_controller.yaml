@@ -1,5 +1,10 @@
 pub_topic: "command"
+ros_1_server_port_: 8888
+
 ros_2_server_ip: "localhost"
-ros_2_server_port: 8888
-ros_1_server_port: 8889
+sub_topic_1: "master_drive"
+ros_2_server_port_1: 8889
+sub_topic_2: "imu"
+ros_2_server_port_2: 8890
+
 Hz: 25

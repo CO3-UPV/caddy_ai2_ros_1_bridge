@@ -1,6 +1,7 @@
 // https://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
 #include "ros/ros.h"
 #include <ackermann_msgs/AckermannDriveStamped.h>
+#include <curtis_msgs/DriveData.h>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -11,63 +12,75 @@ using json = nlohmann::json;
 #include <iostream>
 #include <mutex>
 
-int counter = 0;
+UDPSocket<512> udpSocket_1(true);
+UDPSocket<512> udpSocket_2(true);
+
 bool _ros_1_server_binded_ = true;
-std::mutex mtx; // Declarar un mutex
-UDPSocket<512> udpSocket(true);
+std::mutex mtx;
 UDPServer<512> udpServer;
 
-/*
-void _sub_callback(const ackermann_msgs::AckermannDriveStampedConstPtr& message)
+#define KPH2MS 0.277778
+
+void _sub_1_callback(const curtis_msgs::DriveDataConstPtr& message)
 {
   json j;
-  // https://docs.ros.org/en/jade/api/ackermann_msgs/html/msg/AckermannDriveStamped.html
-  // https://docs.ros.org/en/jade/api/std_msgs/html/msg/Header.html
-  // https://docs.ros2.org/galactic/api/builtin_interfaces/msg/Time.html
-  // https://docs.ros.org/en/diamondback/api/rostime/html/classros_1_1Time.html
-  j["header"]["seq"] = (uint32_t) counter; // message.header.seq; // Not used in ROS 2, en ROS 1 creo que es un id incremental
-  j["header"]["stamp"]["sec"] = (int32_t) message->header.stamp.sec; // En ROS 1 es uint32_t, ya veremos como compatibilizar esto
-  j["header"]["stamp"]["nanosec"] = (uint32_t) message->header.stamp.nsec;
-  j["header"]["frame_id"] = (std::string) message->header.frame_id;
-  // https://docs.ros.org/en/jade/api/ackermann_msgs/html/msg/AckermannDrive.html
-  j["drive"]["steering_angle"] = (float) message->drive.steering_angle;
-  j["drive"]["steering_angle_velocity"] = (float) message->drive.steering_angle_velocity;
-  j["drive"]["speed"] = (float) message->drive.speed;
-  j["drive"]["acceleration"] = (float) message->drive.acceleration;
-  j["drive"]["jerk"] = (float) message->drive.jerk;
-  counter++;  
+  j["speed"] = (float) message->speed;
+  udpSocket_1->Send(j.dump());
 }
-*/
+
+void _sub_2_callback(const sensor_msgs::ImuConstPtr& message){
+  json j;
+  j["orientation"]["x"] = (float) message->orientation.x;
+  j["orientation"]["y"] = (float) message->orientation.y;
+  j["orientation"]["z"] = (float) message->orientation.z;
+  j["orientation"]["w"] = (float) message->orientation.w;
+  j["angular_velocity"]["x"] = (float) message->angular_velocity.x;
+  j["angular_velocity"]["y"] = (float) message->angular_velocity.y;
+  j["angular_velocity"]["z"] = (float) message->angular_velocity.z;
+  j["linear_acceleration"]["x"] = (float) message->linear_acceleration.x;
+  j["linear_acceleration"]["y"] = (float) message->linear_acceleration.y;
+  j["linear_acceleration"]["z"] = (float) message->linear_acceleration.z;
+  udpSocket_2->Send(j.dump());
+}
+
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "bridge_rbcar_controller");
   ros::NodeHandle _node_;
 
-  //std::string _sub_topic_;
   std::string _pub_topic_;
+  int _ros_1_server_port_;
+
   std::string _ros_2_server_ip_;
-  int _ros_2_server_port_ = 8888;
-  int _ros_1_server_port_ = 8889;
-  int _Hz_ = 10;
+  std::string _sub_topic_1_;
+  int _ros_2_server_port_1_;
+  std::string _sub_topic_2_;
+  int _ros_2_server_port_2_;
+
+  int _Hz_;
 
   _node_.param<std::string>("pub_topic", _pub_topic_, "command");
+  _node_.param<int>("ros_1_server_port", _ros_1_server_port_, 8888);
+
   _node_.param<std::string>("ros_2_server_ip", _ros_2_server_ip_, "localhost");
-  _node_.param<int>("ros_2_server_port", _ros_2_server_port_, 8888);
-  _node_.param<int>("ros_1_server_port", _ros_1_server_port_, 8889);
-  _node_.param<int>("Hz", _Hz_, 10);
+  _node_.param<int>("sub_topic_1", _sub_topic_1_, "master_drive");
+  _node_.param<int>("ros_2_server_port_1", _ros_2_server_port_1_, 8889);
+  _node_.param<int>("sub_topic_2", _sub_topic_2_, "imu");
+  _node_.param<int>("ros_2_server_port_2", _ros_2_server_port_2_, 8890);
+
+  _node_.param<int>("Hz", _Hz_, 25);
 
 
-  //ros::Subscriber _sub_ = _node_.subscribe(_sub_topic_, 1, _sub_callback);
+  ros::Subscriber _sub_1_ = _node_.subscribe(_sub_topic_1_, 1, _sub_1_callback);
+  ros::Subscriber _sub_2_ = _node_.subscribe(_sub_topic_2_, 1, _sub_2_callback);
   ros::Publisher _pub_ = _node_.advertise<ackermann_msgs::AckermannDriveStamped>(_pub_topic_, 1);
 
-  //udpSocket.Connect(_IP, _PORT);
+  udpSocket_1.Connect(_ros_2_server_ip_, _ros_2_server_port_1_);
+  udpSocket_2.Connect(_ros_2_server_ip_, _ros_2_server_port_2_);
 
-  // Bind the server to a port.
   udpServer.Bind(_ros_1_server_port_, [](int errorCode, std::string errorMessage) {
-      // BINDING FAILED:
-      // std::cout << errorCode << " : " << errorMessage << std::endl;
-      _ros_1_server_binded_ = false;
+      _ros_1_server_binded_ = false; // Error binding socket
   });
   if (!_ros_1_server_binded_) 
   { 
@@ -75,18 +88,20 @@ int main(int argc, char **argv)
     return -1;
   }
 
+
   bool _new_incoming_message_ = false;
   uint32_t _pub_message_counter_ = 0;
   json _pub_json_;
   ackermann_msgs::AckermannDriveStamped _pub_msg_;
 
+
   udpServer.onRawMessageReceived = [&](const char* message, int length, std::string ipv4, uint16_t port) {
-      std::cout << ipv4 << ":" << port << " => " << message << "(" << length << ")" << std::endl;
       mtx.lock();
       _pub_json_ = json::parse(message);
       _new_incoming_message_ = true;
       mtx.unlock();
   };
+
 
   ros::Rate loop_rate(_Hz_);
   while (ros::ok())
@@ -107,8 +122,6 @@ int main(int argc, char **argv)
       _new_incoming_message_ = false;
       mtx.unlock();
 
-      std::cout << "HERE" << std::endl;
-
       _pub_message_counter_++;
 
       _pub_.publish(_pub_msg_);
@@ -118,7 +131,8 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
-  //udpSocket.Close();
+  udpSocket_1.Close();
+  udpSocket_2.Close();
   udpServer.Close();
 
   return 0;
