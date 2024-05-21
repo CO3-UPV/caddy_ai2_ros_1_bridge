@@ -20,12 +20,10 @@ bool _ros_1_server_binded_ = true;
 std::mutex mtx;
 UDPServer<512> udpServer;
 
-#define KPH2MS 0.277778
-
 void _sub_1_callback(const curtis_msgs::DriveDataConstPtr& message)
 {
   json j;
-  j["speed"] = (float) message->speed * KPH2MS;
+  j["speed"] = (float) message->speed;
   udpSocket_1.Send(j.dump());
 }
 
