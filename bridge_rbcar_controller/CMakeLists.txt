@@ -6,6 +6,8 @@ project(bridge_rbcar_controller)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   ackermann_msgs
+  sensor_msgs
+  curtis_msgs
   roscpp
 )
 

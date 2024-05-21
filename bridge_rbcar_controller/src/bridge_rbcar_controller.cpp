@@ -1,6 +1,7 @@
 // https://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
 #include "ros/ros.h"
 #include <ackermann_msgs/AckermannDriveStamped.h>
+#include <sensor_msgs/Imu.h>
 #include <curtis_msgs/DriveData.h>
 
 #include <nlohmann/json.hpp>
@@ -24,8 +25,8 @@ UDPServer<512> udpServer;
 void _sub_1_callback(const curtis_msgs::DriveDataConstPtr& message)
 {
   json j;
-  j["speed"] = (float) message->speed;
-  udpSocket_1->Send(j.dump());
+  j["speed"] = (float) message->speed * KPH2MS;
+  udpSocket_1.Send(j.dump());
 }
 
 void _sub_2_callback(const sensor_msgs::ImuConstPtr& message){
@@ -40,7 +41,7 @@ void _sub_2_callback(const sensor_msgs::ImuConstPtr& message){
   j["linear_acceleration"]["x"] = (float) message->linear_acceleration.x;
   j["linear_acceleration"]["y"] = (float) message->linear_acceleration.y;
   j["linear_acceleration"]["z"] = (float) message->linear_acceleration.z;
-  udpSocket_2->Send(j.dump());
+  udpSocket_2.Send(j.dump());
 }
 
 
@@ -64,9 +65,9 @@ int main(int argc, char **argv)
   _node_.param<int>("ros_1_server_port", _ros_1_server_port_, 8888);
 
   _node_.param<std::string>("ros_2_server_ip", _ros_2_server_ip_, "localhost");
-  _node_.param<int>("sub_topic_1", _sub_topic_1_, "master_drive");
+  _node_.param<std::string>("sub_topic_1", _sub_topic_1_, "master_drive");
   _node_.param<int>("ros_2_server_port_1", _ros_2_server_port_1_, 8889);
-  _node_.param<int>("sub_topic_2", _sub_topic_2_, "imu");
+  _node_.param<std::string>("sub_topic_2", _sub_topic_2_, "imu");
   _node_.param<int>("ros_2_server_port_2", _ros_2_server_port_2_, 8890);
 
   _node_.param<int>("Hz", _Hz_, 25);
