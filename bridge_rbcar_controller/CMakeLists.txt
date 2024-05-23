@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   ackermann_msgs
   sensor_msgs
   curtis_msgs
+  rbcar_steering_controller
   roscpp
 )
 

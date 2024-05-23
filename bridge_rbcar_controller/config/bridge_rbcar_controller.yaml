@@ -6,5 +6,7 @@ sub_topic_1: "master_drive"
 ros_2_server_port_1: 8889
 sub_topic_2: "imu"
 ros_2_server_port_2: 8890
+sub_topic_3: "status"
+ros_2_server_port_3: 8891
 
-Hz: 25
+Hz: 100

@@ -3,6 +3,7 @@
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <curtis_msgs/DriveData.h>
+#include <rbcar_steering_controller/EpcEncoderStatus.h>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -15,6 +16,7 @@ using json = nlohmann::json;
 
 UDPSocket<512> udpSocket_1(true);
 UDPSocket<512> udpSocket_2(true);
+UDPSocket<512> udpSocket_3(true);
 
 bool _ros_1_server_binded_ = true;
 std::mutex mtx;
@@ -42,6 +44,12 @@ void _sub_2_callback(const sensor_msgs::ImuConstPtr& message){
   udpSocket_2.Send(j.dump());
 }
 
+void _sub_1_callback(const 	rbcar_steering_controller::SteeringControllerStatusConstPtr& message)
+{
+  json j;
+  j["steering"] = (float) message->steering_position;
+  udpSocket_3.Send(j.dump());
+}
 
 int main(int argc, char **argv)
 {
@@ -56,6 +64,8 @@ int main(int argc, char **argv)
   int _ros_2_server_port_1_;
   std::string _sub_topic_2_;
   int _ros_2_server_port_2_;
+  std::string _sub_topic_3_;
+  int _ros_2_server_port_3_;
 
   int _Hz_;
 
@@ -67,16 +77,20 @@ int main(int argc, char **argv)
   _node_.param<int>("ros_2_server_port_1", _ros_2_server_port_1_, 8889);
   _node_.param<std::string>("sub_topic_2", _sub_topic_2_, "imu");
   _node_.param<int>("ros_2_server_port_2", _ros_2_server_port_2_, 8890);
+  _node_.param<std::string>("sub_topic_3", _sub_topic_3_, "status");
+  _node_.param<int>("ros_2_server_port_3", _ros_2_server_port_3_, 8891);
 
-  _node_.param<int>("Hz", _Hz_, 25);
+  _node_.param<int>("Hz", _Hz_, 100);
 
 
   ros::Subscriber _sub_1_ = _node_.subscribe(_sub_topic_1_, 1, _sub_1_callback);
   ros::Subscriber _sub_2_ = _node_.subscribe(_sub_topic_2_, 1, _sub_2_callback);
+  ros::Subscriber _sub_3_ = _node_.subscribe(_sub_topic_3_, 1, _sub_3_callback);
   ros::Publisher _pub_ = _node_.advertise<ackermann_msgs::AckermannDriveStamped>(_pub_topic_, 1);
 
   udpSocket_1.Connect(_ros_2_server_ip_, _ros_2_server_port_1_);
   udpSocket_2.Connect(_ros_2_server_ip_, _ros_2_server_port_2_);
+  udpSocket_3.Connect(_ros_2_server_ip_, _ros_2_server_port_3_);
 
   udpServer.Bind(_ros_1_server_port_, [](int errorCode, std::string errorMessage) {
       _ros_1_server_binded_ = false; // Error binding socket
@@ -132,6 +146,7 @@ int main(int argc, char **argv)
 
   udpSocket_1.Close();
   udpSocket_2.Close();
+  udpSocket_3.Close();
   udpServer.Close();
 
   return 0;

@@ -44,11 +44,12 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>curtis_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rbcar_steering_controller</build_depend>
   <run_depend>ackermann_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>curtis_msgs</run_depend>
   <run_depend>roscpp</run_depend>
-
+  <run_depend>rbcar_steering_controller</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
