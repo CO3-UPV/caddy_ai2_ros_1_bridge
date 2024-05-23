@@ -1,7 +1,7 @@
-pub_topic: "command"
+pub_topic: "/rbcar_controller/command"
 ros_1_server_port_: 8888
 
-ros_2_server_ip: "localhost"
+ros_2_server_ip: "192.168.0.50"
 sub_topic_1: "master_drive"
 ros_2_server_port_1: 8889
 sub_topic_2: "imu"

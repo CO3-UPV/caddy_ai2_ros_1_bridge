@@ -3,7 +3,7 @@
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <curtis_msgs/DriveData.h>
-#include <rbcar_steering_controller/EpcEncoderStatus.h>
+#include <rbcar_steering_controller/SteeringControllerStatus.h>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -44,7 +44,7 @@ void _sub_2_callback(const sensor_msgs::ImuConstPtr& message){
   udpSocket_2.Send(j.dump());
 }
 
-void _sub_1_callback(const 	rbcar_steering_controller::SteeringControllerStatusConstPtr& message)
+void _sub_3_callback(const rbcar_steering_controller::SteeringControllerStatusConstPtr& message)
 {
   json j;
   j["steering"] = (float) message->steering_position;
