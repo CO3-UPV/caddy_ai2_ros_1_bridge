@@ -69,15 +69,15 @@ int main(int argc, char **argv)
 
   int _Hz_;
 
-  _node_.param<std::string>("pub_topic", _pub_topic_, "command");
+  _node_.param<std::string>("pub_topic", _pub_topic_, "/rbcar_controller/command");
   _node_.param<int>("ros_1_server_port", _ros_1_server_port_, 8888);
 
-  _node_.param<std::string>("ros_2_server_ip", _ros_2_server_ip_, "localhost");
-  _node_.param<std::string>("sub_topic_1", _sub_topic_1_, "master_drive");
+  _node_.param<std::string>("ros_2_server_ip", _ros_2_server_ip_, "192.168.0.50");
+  _node_.param<std::string>("sub_topic_1", _sub_topic_1_, "/curtis_controller/master_drive");
   _node_.param<int>("ros_2_server_port_1", _ros_2_server_port_1_, 8889);
-  _node_.param<std::string>("sub_topic_2", _sub_topic_2_, "imu");
+  _node_.param<std::string>("sub_topic_2", _sub_topic_2_, "/imu");
   _node_.param<int>("ros_2_server_port_2", _ros_2_server_port_2_, 8890);
-  _node_.param<std::string>("sub_topic_3", _sub_topic_3_, "status");
+  _node_.param<std::string>("sub_topic_3", _sub_topic_3_, "/rbcar_steering_controller/status");
   _node_.param<int>("ros_2_server_port_3", _ros_2_server_port_3_, 8891);
 
   _node_.param<int>("Hz", _Hz_, 100);

@@ -2,11 +2,11 @@ pub_topic: "/rbcar_controller/command"
 ros_1_server_port_: 8888
 
 ros_2_server_ip: "192.168.0.50"
-sub_topic_1: "master_drive"
+sub_topic_1: "/curtis_controller/master_drive"
 ros_2_server_port_1: 8889
-sub_topic_2: "imu"
+sub_topic_2: "/imu"
 ros_2_server_port_2: 8890
-sub_topic_3: "status"
+sub_topic_3: "/rbcar_steering_controller/status"
 ros_2_server_port_3: 8891
 
 Hz: 100
